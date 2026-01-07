@@ -6,17 +6,18 @@
 
 ### __Summary__
 
-For my **CS50P** [Final Project](https://cs50.harvard.edu/python/2022/project/), I decided to create a single purpose, cross-platform desktop application with a functional GUI that generates vCards in QR code format.
-
-### __Video Demo__
-
-[Video Demo Link](https://youtu.be/33GYi6om1kI)
+For my **CS50P** [Final Project](https://cs50.harvard.edu/python/2022/project/), I created a single-purpose application that generates vCards in QR code format. Originally built as a desktop app, it has since been migrated to a browser-based interface powered by **Gradio**.
 
 ### __Description__
 
-This is a single purpose desktop application that allows a user to enter contact details into a GUI that then generates a quick response code image. These QR code images can be scanned by most modern mobile devices that have a camera. QR code images allow for the ability to embed contact details on business cards, resumes, or even artwork.
+This application allows users to enter contact details into a responsive web interface to generate a high-quality Quick Response (QR) code. These codes can be scanned by most modern mobile devices, making them ideal for embedding contact details on business cards, resumes, or marketing materials.
 
-The reason I chose this project was to learn how to create micro-applications for niche use-cases, and in turn learn more lightweight ways of presenting code functionality to end-users in non-technical settings. My reasoning being that good programmers should be able to help non-programmers solve problems by creating tools that simplify tasks and processes.
+The migration to Gradio brings several key improvements:
+- **Responsive Web UI**: Access the tool via your browser with a modern look and feel.
+- **Customization**: Change QR foreground and background colors to match your branding.
+- **Branding**: Upload a logo or image to overlay in the center of the QR code.
+- **Robust Validation**: Real-time feedback on field formats (Email, Phone, Birthday, etc.).
+- **Live Preview**: See your vCard string and QR code update as you generate.
 
 </br>
 <hr>
@@ -24,29 +25,24 @@ The reason I chose this project was to learn how to create micro-applications fo
 
 ### __Setup__
 
-Make use of this one-liner for a quick setup.
+The project now uses **uv** for extremely fast and reliable dependency management. Make use of this one-liner for a quick setup.
 
 ```bash
 git clone https://github.com/m-spangenberg/qr-vcard-generator && cd qr-vcard-generator/ && make init
 ```
 
-Or, if you don't have `build-essential` installed, use `pipenv` to set up dependencies in order for the application to function.
+Alternatively, you can manually set up the environment:
 
 ```bash
-# clone the repository
+# Clone the repository
 git clone https://github.com/m-spangenberg/qr-vcard-generator
-
-# move into the cloned repo
 cd qr-vcard-generator/
 
-# make sure to have pipenv installed
-pip install pipenv
+# Sync dependencies
+uv sync
 
-# set up venv and install dependencies with pipenv
-pipenv sync
-
-# run the application
-pipenv run python3 project.py
+# Launch the Gradio web interface
+uv run python main.py
 ```
 
 </br>
@@ -87,28 +83,25 @@ END:VCARD
 <hr>
 </br>
 
-### __Testing and Development Dependencies__
+### __Testing and Development__
 
-To set up a development environment for this project with `pipenv`:
+To set up the environment and install all dependencies:
 
 ``` bash
-make dev
+make init
 ```
 
 To perform unittests with `pytest`:
 
 ``` bash
-make tested
+make test
 ```
 
-Or, if you don't have `build-essential` installed.
+Or manually using `uv`:
 
 ```bash
-# install development dependencies
-pipenv install --dev
-
-# perform unittest
-pipenv run pytest
+# Perform unittests
+uv run pytest
 ```
 
 </br>
@@ -118,11 +111,6 @@ pipenv run pytest
 ### __Acknowledgements__
 
 Thank you to David Malan and his entire team for helping to make Harvard's CS50 accessible to anyone who wants to learn.
-
-#### __Easter Egg__
-
-If you generate an image without entering any information, you'll receive a QR code that points to Rick Astley's "Never Gonna Give You Up".
-
 
 #### __Further Reading__
 
@@ -134,9 +122,9 @@ If you intend to fork this project, see the following links for helpful informat
 
 #### __Libraries Used__
 
-The following libraries and tools are used to make this project.
+The following libraries and tools are used to make this project possible:
 
-* [qrcode](https://pypi.org/project/qrcode/) - Generating QR codes
-* [Pillow](https://pypi.org/project/Pillow/) - Image formatting support
-* [DearPyGui](https://pypi.org/project/dearpygui/) - Cross-platform GUI framework
-* [DearPyGui-Ext](https://pypi.org/project/dearpygui-ext/) - Bundled light theme for DearPyGui
+* [Gradio](https://gradio.app/) - Modern web interface framework
+* [qrcode](https://pypi.org/project/qrcode/) - Generating high-quality QR codes
+* [Pillow](https://pypi.org/project/Pillow/) - Image processing and branding support
+* [uv](https://github.com/astral-sh/uv) - Fast Python package management
