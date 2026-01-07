@@ -4,11 +4,28 @@
 <img src="readme/readme_header_qrvcard.png" alt="example qr code" width="720"/>
 </div>
 
-### __Summary__
+## __Summary__
 
 For my **CS50P** [Final Project](https://cs50.harvard.edu/python/2022/project/), I created a single-purpose application that generates vCards in QR code format. Originally built as a desktop app, it has since been migrated to a browser-based interface powered by **Gradio**.
 
-### __Description__
+## __Todo__
+
+- [x] Migrate from Tkinter to Gradio
+- [x] Add color customization for QR codes
+- [x] Add logo/image overlay support
+- [x] Improve field validation and error handling
+- [x] Implement live preview of vCard and QR code
+- [x] Update README with new setup instructions
+- [x] Switch to `uv` for dependency management
+- [x] Add tests for new features
+- [] Expand to support additional QR formats (e.g., WiFi, URLs)
+- [] Add configuration saving/loading for user preferences
+- [] Add additional styling options for QR codes (shapes, patterns)
+- [] Add colour palletes and gradients for QR codes
+- [] Add multi-language support for the interface
+- [] Deploy to a public web server for easy access
+
+## __Description__
 
 This application allows users to enter contact details into a responsive web interface to generate a high-quality Quick Response (QR) code. These codes can be scanned by most modern mobile devices, making them ideal for embedding contact details on business cards, resumes, or marketing materials.
 
@@ -18,10 +35,6 @@ The migration to Gradio brings several key improvements:
 - **Branding**: Upload a logo or image to overlay in the center of the QR code.
 - **Robust Validation**: Real-time feedback on field formats (Email, Phone, Birthday, etc.).
 - **Live Preview**: See your vCard string and QR code update as you generate.
-
-</br>
-<hr>
-</br>
 
 ### __Setup__
 
@@ -44,10 +57,6 @@ uv sync
 # Launch the Gradio web interface
 uv run python main.py
 ```
-
-</br>
-<hr>
-</br>
 
 ### __vCard Format__
 
@@ -79,9 +88,11 @@ NOTE: optional note, keep it short
 END:VCARD
 ```
 
-</br>
-<hr>
-</br>
+#### Example QR Code
+
+<div align="center">
+<img src="readme/example.png" alt="example qr code" width="240"/>
+</div>  
 
 ### __Testing and Development__
 
@@ -103,10 +114,6 @@ Or manually using `uv`:
 # Perform unittests
 uv run pytest
 ```
-
-</br>
-<hr>
-</br>
 
 ### __Acknowledgements__
 
