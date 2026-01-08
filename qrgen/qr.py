@@ -57,6 +57,7 @@ def generate_qr(
     logo_scale=0.2,
     logo_opacity=1.0,
     logo_clip="none",
+    transparent_bg=False,
     module_drawer="square",
     color_mask="solid",
     gradient_type="linear",
@@ -139,12 +140,17 @@ def generate_qr(
     resample = Image.LANCZOS
 
     # Background / Foreground
-    bg_rgba = _to_rgb_tuple(back_color, default=(255, 255, 255))[:3]
-    bg_img = Image.new("RGBA", (pixel_size, pixel_size), bg_rgba + (255,))
+    if transparent_bg:
+        bg_rgba = (0, 0, 0, 0)
+        bg_img = Image.new("RGBA", (pixel_size, pixel_size), bg_rgba)
+    else:
+        bg_rgba = _to_rgb_tuple(back_color, default=(255, 255, 255))[:3]
+        bg_img = Image.new("RGBA", (pixel_size, pixel_size), bg_rgba + (255,))
+    
     fg_rgba = _to_rgb_tuple(fill_color, default=(0, 0, 0))[:3]
     fg_img = Image.new("RGBA", (pixel_size, pixel_size), fg_rgba + (255,))
 
-    if color_mask == "gradient":
+    if color_mask == "gradient" and not transparent_bg:
         grad_base = Image.new("RGBA", (pixel_size, pixel_size))
         c1 = _to_rgb_tuple(gradient_start, default=(0, 0, 0))[:3]
         c2 = _to_rgb_tuple(gradient_end, default=(255, 255, 255))[:3]
@@ -220,12 +226,16 @@ def generate_qr(
         
         # Use appropriate fallbacks for border color (bg if not specified)
         actual_back_color = back_color if back_color else "white"
-        if color_mask == "gradient" and gradient_target == "background":
+        if color_mask == "gradient" and gradient_target == "background" and not transparent_bg:
             actual_back_color = gradient_start if gradient_start else "white"
             
         b_color = border_color if border_color else actual_back_color
         
-        canvas = Image.new("RGBA", (nw, nh), _to_rgb_tuple(b_color, default=(255, 255, 255))[:3] + (255,))
+        if transparent_bg:
+            canvas = Image.new("RGBA", (nw, nh), (0, 0, 0, 0))
+        else:
+            canvas = Image.new("RGBA", (nw, nh), _to_rgb_tuple(b_color, default=(255, 255, 255))[:3] + (255,))
+        
         px, py = b, b + hh
         
         # QR Corner Rounding
@@ -252,17 +262,41 @@ def generate_qr(
             logo = Image.open(logo_path).convert("RGBA")
             lsz = max(1, int(size * float(logo_scale or 0.2)))
             logo = logo.resize((lsz, lsz), resample)
+            
+            # Apply opacity to the logo first
             if float(logo_opacity or 1.0) < 1.0:
-                logo.putalpha(logo.split()[-1].point(lambda p: int(p * float(logo_opacity))))
-            lm = logo.split()[-1]
-            if logo_clip != "none":
-                lm = Image.new("L", (lsz, lsz), 0)
-                if logo_clip == "circle": ImageDraw.Draw(lm).ellipse([0,0,lsz,lsz], fill=255)
-                else: ImageDraw.Draw(lm).rectangle([0,0,lsz,lsz], fill=255)
-                logo.putalpha(lm)
+                alpha = logo.split()[-1].point(lambda p: int(p * float(logo_opacity)))
+                logo.putalpha(alpha)
+                
             lx, ly = px + (img.width - lsz)//2, py + (img.height - lsz)//2
-            canvas.paste((0,0,0,0), (lx, ly), mask=lm)
-            canvas.paste(logo, (lx, ly), mask=lm)
+            
+            if logo_clip != "none":
+                # Create a larger cutout mask
+                buffer = max(2, int(lsz * 0.1))
+                csz = lsz + buffer * 2
+                cutout_mask = Image.new("L", (csz, csz), 0)
+                draw = ImageDraw.Draw(cutout_mask)
+                if logo_clip == "circle":
+                    draw.ellipse([0, 0, csz, csz], fill=255)
+                else:
+                    draw.rounded_rectangle([0, 0, csz, csz], radius=max(1, int(buffer*0.5)), fill=255)
+                
+                clx, cly = px + (img.width - csz)//2, py + (img.height - csz)//2
+                canvas.paste((0,0,0,0), (clx, cly), mask=cutout_mask)
+                
+                # Clip the logo itself if requested
+                lm = Image.new("L", (lsz, lsz), 0)
+                if logo_clip == "circle":
+                    ImageDraw.Draw(lm).ellipse([0, 0, lsz, lsz], fill=255)
+                else:
+                    ImageDraw.Draw(lm).rectangle([0, 0, lsz, lsz], fill=255)
+                
+                # Combine logo mask with opacity
+                if float(logo_opacity or 1.0) < 1.0:
+                    lm = lm.point(lambda p: int(p * float(logo_opacity)))
+                logo.putalpha(lm)
+
+            canvas.paste(logo, (lx, ly), mask=logo.split()[-1])
         img = canvas
     except Exception:
         logging.exception("Post-processing failure")

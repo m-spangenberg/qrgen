@@ -65,6 +65,7 @@ class QRGenGUI:
                     "shared_logo",
                     "shared_logo_enable",
                     "palette",
+                    "transparent_bg",
                     "use_gradient",
                     "gradient_target",
                     "gradient_from",
@@ -136,6 +137,7 @@ class QRGenGUI:
                 footer_align_val = shared.get("footer_align")
                 size = shared.get("size")
                 ec = shared.get("ec")
+                trans_bg = shared.get("transparent_bg")
 
                 user_data = {
                     self.user_fields[i]: vals[i] for i in range(num) if vals[i]
@@ -203,124 +205,72 @@ class QRGenGUI:
                 if palette == "Custom":
                     fg = custom_fg
                     bg = custom_bg
-                    generate_qr(
-                        qr_content,
-                        logo_path=logo_path,
-                        size=int(size) if size is not None else 240,
-                        error_correction=ec,
-                        shape=shape,
-                        pattern=pattern,
-                        fill_color=fg,
-                        back_color=bg,
-                        gradient=gradient,
-                        gradient_target=(gradient_target or "Background").lower(),
-                        pattern_strength=int(pattern_strength)
-                        if pattern_strength is not None
-                        else 50,
-                        logo_scale=logo_scale,
-                        logo_opacity=logo_opacity,
-                        logo_clip=logo_clip,
-                        border=int(border) if border is not None else 0,
-                        border_color=border_color,
-                        corner_radius=int(corner_radius)
-                        if corner_radius is not None
-                        else 0,
-                        qr_corner_radius=int(qr_corner_radius)
-                        if qr_corner_radius is not None
-                        else None,
-                        border_corner_radius=int(corner_radius)
-                        if corner_radius is not None
-                        else None,
-                        header_text=header_txt,
-                        footer_text=footer_txt,
-                        header_font_size=int(header_font_size)
-                        if header_font_size is not None
-                        else 16,
-                        footer_font_size=int(footer_font_size)
-                        if footer_font_size is not None
-                        else 14,
-                        header_font_path=(
-                            header_font_file_val.name
-                            if header_font_file_val
-                            else (
-                                header_font_select_val
-                                if header_font_select_val != "Default"
-                                else None
-                            )
-                        ),
-                        footer_font_path=(
-                            footer_font_file_val.name
-                            if footer_font_file_val
-                            else (
-                                footer_font_select_val
-                                if footer_font_select_val != "Default"
-                                else None
-                            )
-                        ),
-                        header_bold=bool(header_bold_val),
-                        footer_bold=bool(footer_bold_val),
-                        header_align=header_align_val,
-                        footer_align=footer_align_val,
-                    )
                 else:
-                    generate_qr(
-                        qr_content,
-                        logo_path=logo_path,
-                        size=int(size) if size is not None else 240,
-                        error_correction=ec,
-                        shape=shape,
-                        pattern=pattern,
-                        palette=palette,
-                        gradient=gradient,
-                        gradient_target=(gradient_target or "Background").lower(),
-                        pattern_strength=int(pattern_strength)
-                        if pattern_strength is not None
-                        else 50,
-                        logo_scale=logo_scale,
-                        logo_opacity=logo_opacity,
-                        logo_clip=logo_clip,
-                        border=int(border) if border is not None else 0,
-                        border_color=border_color,
-                        corner_radius=int(corner_radius)
-                        if corner_radius is not None
-                        else 0,
-                        qr_corner_radius=int(qr_corner_radius)
-                        if qr_corner_radius is not None
-                        else None,
-                        border_corner_radius=int(corner_radius)
-                        if corner_radius is not None
-                        else None,
-                        header_text=header_txt,
-                        footer_text=footer_txt,
-                        header_font_size=int(header_font_size)
-                        if header_font_size is not None
-                        else 16,
-                        footer_font_size=int(footer_font_size)
-                        if footer_font_size is not None
-                        else 14,
-                        header_font_path=(
-                            header_font_file_val.name
-                            if header_font_file_val
-                            else (
-                                header_font_select_val
-                                if header_font_select_val != "Default"
-                                else None
-                            )
-                        ),
-                        footer_font_path=(
-                            footer_font_file_val.name
-                            if footer_font_file_val
-                            else (
-                                footer_font_select_val
-                                if footer_font_select_val != "Default"
-                                else None
-                            )
-                        ),
-                        header_bold=bool(header_bold_val),
-                        footer_bold=bool(footer_bold_val),
-                        header_align=header_align_val,
-                        footer_align=footer_align_val,
-                    )
+                    fg = None
+                    bg = None
+
+                generate_qr(
+                    qr_content,
+                    logo_path=logo_path,
+                    size=int(size) if size is not None else 240,
+                    error_correction=ec,
+                    shape=shape,
+                    pattern=pattern,
+                    palette=palette,
+                    fill_color=fg,
+                    back_color=bg,
+                    transparent_bg=trans_bg,
+                    gradient=gradient,
+                    gradient_target=(gradient_target or "Background").lower(),
+                    pattern_strength=int(pattern_strength)
+                    if pattern_strength is not None
+                    else 50,
+                    logo_scale=logo_scale,
+                    logo_opacity=logo_opacity,
+                    logo_clip=logo_clip,
+                    border=int(border) if border is not None else 0,
+                    border_color=border_color,
+                    corner_radius=int(corner_radius)
+                    if corner_radius is not None
+                    else 0,
+                    qr_corner_radius=int(qr_corner_radius)
+                    if qr_corner_radius is not None
+                    else None,
+                    border_corner_radius=int(corner_radius)
+                    if corner_radius is not None
+                    else None,
+                    header_text=header_txt,
+                    footer_text=footer_txt,
+                    header_font_size=int(header_font_size)
+                    if header_font_size is not None
+                    else 16,
+                    footer_font_size=int(footer_font_size)
+                    if footer_font_size is not None
+                    else 14,
+                    header_font_path=(
+                        header_font_file_val.name
+                        if header_font_file_val
+                        else (
+                            header_font_select_val
+                            if header_font_select_val != "Default"
+                            else None
+                        )
+                    ),
+                    footer_font_path=(
+                        footer_font_file_val.name
+                        if footer_font_file_val
+                        else (
+                            footer_font_select_val
+                            if footer_font_select_val != "Default"
+                            else None
+                        )
+                    ),
+                    header_bold=bool(header_bold_val),
+                    footer_bold=bool(footer_bold_val),
+                    header_align=header_align_val,
+                    footer_align=footer_align_val,
+                )
+                return "output/preview.png", qr_content
                 return "output/preview.png", vcard_str, "vcard"
 
             def gen_generic(payload: str, *shared_args):
@@ -329,6 +279,7 @@ class QRGenGUI:
                     "shared_logo",
                     "shared_logo_enable",
                     "palette",
+                    "transparent_bg",
                     "use_gradient",
                     "gradient_target",
                     "gradient_from",
@@ -401,6 +352,7 @@ class QRGenGUI:
                 footer_align_val = shared.get("footer_align")
                 size = shared.get("size")
                 ec = shared.get("ec")
+                trans_bg = shared.get("transparent_bg")
 
                 payload = (payload or "").strip()
                 if not payload:
@@ -457,6 +409,7 @@ class QRGenGUI:
                     pattern=pattern,
                     fill_color=fg,
                     back_color=bg,
+                    transparent_bg=trans_bg,
                     gradient=gradient,
                     gradient_target=(gradient_target or "Background").lower(),
                     pattern_strength=int(pattern_strength)
@@ -1103,6 +1056,9 @@ class QRGenGUI:
                                 )
 
                                 qr_colours_md = gr.Markdown("### " + t("Color", lang))
+                                transparent_bg = gr.Checkbox(
+                                    label=t("transparent_bg", lang), value=False
+                                )
                                 palette_dropdown = gr.Dropdown(
                                     label=t("palette", lang),
                                     choices=[
@@ -1211,6 +1167,10 @@ class QRGenGUI:
                                     )
                                     download_batch_btn = gr.Button(
                                         t("download_batch", lang), variant="secondary"
+                                    )
+                                    download_template_btn = gr.Button(
+                                        t("download_template", lang),
+                                        variant="secondary",
                                     )
 
                                 # Download outputs
@@ -1382,6 +1342,7 @@ class QRGenGUI:
                         gr.update(label="QR " + t("corner_radius", sel)),
                         gr.update(label=t("border_color", sel)),
                         gr.update(value="### " + t("Color", sel)),  # colours header
+                        gr.update(label=t("transparent_bg", sel)),
                         gr.update(label=t("palette", sel)),
                         gr.update(label=t("foreground_color", sel)),
                         gr.update(label=t("bg_color", sel)),
@@ -1400,6 +1361,7 @@ class QRGenGUI:
                         gr.update(label=t("upload_csv", sel)),
                         gr.update(value=t("download_svg", sel)),
                         gr.update(value=t("download_batch", sel)),
+                        gr.update(value=t("download_template", sel)),
                         gr.update(value="### " + t("logo_section", sel)),  # logo header
                         gr.update(label=t("logo_optional", sel)),
                         gr.update(label=t("enable_logo", sel)),
@@ -1509,6 +1471,7 @@ class QRGenGUI:
                             "shared_logo",
                             "shared_logo_enable",
                             "palette",
+                            "transparent_bg",
                             "use_gradient",
                             "gradient_target",
                             "gradient_from",
@@ -1673,6 +1636,25 @@ class QRGenGUI:
                         logging.exception("Failed to build batch zip")
                         return None
 
+                def _download_template():
+                    """Create a sample CSV template for batch generation and return its path."""
+                    try:
+                        out_dir = os.path.join(os.getcwd(), "output")
+                        os.makedirs(out_dir, exist_ok=True)
+                        template_path = os.path.join(out_dir, "batch_template.csv")
+                        import csv
+
+                        with open(template_path, "w", encoding="utf-8", newline="") as fh:
+                            writer = csv.writer(fh)
+                            writer.writerow(["Content"])
+                            writer.writerow(["https://google.com"])
+                            writer.writerow(["https://github.com"])
+                            writer.writerow(["Sample Text"])
+                        return template_path
+                    except Exception:
+                        logging.exception("Failed to build CSV template")
+                        return None
+
                 def _reset_to_defaults():
                     # Return a sequence of gr.update(...) results matching the settings controls order used elsewhere
                     try:
@@ -1680,6 +1662,7 @@ class QRGenGUI:
                             gr.update(value=240),  # size_slider
                             gr.update(value="H"),  # ec_dropdown
                             gr.update(value=1000),  # max_payload
+                            gr.update(value=False),  # transparent_bg
                             gr.update(value="Classic"),  # palette_dropdown
                             gr.update(value=False),  # gradient_toggle
                             gr.update(value="#000000", visible=False),  # gradient_from
@@ -1778,6 +1761,7 @@ class QRGenGUI:
                         qr_corner_radius,
                         border_color_picker,
                         qr_colours_md,
+                        transparent_bg,
                         palette_dropdown,
                         custom_fg,
                         custom_bg,
@@ -1796,6 +1780,7 @@ class QRGenGUI:
                         upload_batch_csv,
                         download_svg_btn,
                         download_batch_btn,
+                        download_template_btn,
                         logo_md,
                         shared_logo,
                         shared_logo_enable,
@@ -1833,6 +1818,7 @@ class QRGenGUI:
                     shared_logo,
                     shared_logo_enable,
                     palette_dropdown,
+                    transparent_bg,
                     gradient_toggle,
                     gradient_target,
                     gradient_from,
@@ -1880,6 +1866,7 @@ class QRGenGUI:
                         size_slider,
                         ec_dropdown,
                         max_payload,
+                        transparent_bg,
                         palette_dropdown,
                         gradient_toggle,
                         gradient_from,
@@ -1928,6 +1915,11 @@ class QRGenGUI:
                     fn=_download_batch,
                     inputs=[upload_batch_csv] + shared_inputs,
                     outputs=[download_batch_file],
+                )
+                download_template_btn.click(
+                    fn=_download_template,
+                    inputs=None,
+                    outputs=[upload_batch_csv],
                 )
 
                 palette_dropdown.change(
