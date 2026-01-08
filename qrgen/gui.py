@@ -1162,9 +1162,6 @@ class QRGenGUI:
                                     visible=True,
                                 )
                                 with gr.Row():
-                                    download_svg_btn = gr.Button(
-                                        t("download_svg", lang), variant="secondary"
-                                    )
                                     download_batch_btn = gr.Button(
                                         t("download_batch", lang), variant="secondary"
                                     )
@@ -1174,9 +1171,6 @@ class QRGenGUI:
                                     )
 
                                 # Download outputs
-                                download_svg_file = gr.File(
-                                    label="SVG File", visible=False
-                                )
                                 download_batch_file = gr.File(
                                     label="Batch ZIP", visible=False
                                 )
@@ -1359,7 +1353,6 @@ class QRGenGUI:
                         gr.update(label=t("pattern_strength", sel)),
                         gr.update(value="## " + t("Files", sel)),  # files header
                         gr.update(label=t("upload_csv", sel)),
-                        gr.update(value=t("download_svg", sel)),
                         gr.update(value=t("download_batch", sel)),
                         gr.update(value=t("download_template", sel)),
                         gr.update(value="### " + t("logo_section", sel)),  # logo header
@@ -1529,56 +1522,6 @@ class QRGenGUI:
                         logging.exception("Failed to save settings")
                         return "images/placeholder.png", t("settings_saved", lang)
 
-                def _export_svg_preview(*shared_args):
-                    """Create an SVG for the current settings and return a path to the file."""
-                    try:
-                        out_dir = os.path.join(os.getcwd(), "output")
-                        os.makedirs(out_dir, exist_ok=True)
-                        svg_path = os.path.join(out_dir, "preview.svg")
-
-                        # Try to render a native vector QR using qrcode library (if possible)
-                        try:
-                            import qrcode
-                            from qrcode.image.svg import SvgImage
-
-                            qr = qrcode.QRCode(
-                                error_correction=qrcode.constants.ERROR_CORRECT_H
-                            )
-                            # Build test payload from shared args
-                            payload = "QRGen SVG Export"
-                            qr.add_data(payload)
-                            qr.make(fit=True)
-                            img = qr.make_image(image_factory=SvgImage)
-                            img.save(svg_path)
-                            return svg_path
-                        except Exception:
-                            # Fallback: convert current PNG preview to an SVG wrapper
-                            # Generate PNG preview using the generator
-                            res = gen_generic("QRGen SVG Fallback", *shared_args)
-                            src_png = (
-                                res[0]
-                                if isinstance(res, tuple) and len(res) >= 1
-                                else "images/placeholder.png"
-                            )
-                            if not os.path.isfile(src_png):
-                                return None
-                            # Embed PNG as base64 inside a minimal SVG for download convenience
-                            import base64
-
-                            with open(src_png, "rb") as fh:
-                                b64 = base64.b64encode(fh.read()).decode("ascii")
-                            with open(svg_path, "w", encoding="utf-8") as fh:
-                                fh.write(
-                                    f"<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512'>\n"
-                                )
-                                fh.write(
-                                    f"<image href='data:image/png;base64,{b64}' width='100%' height='100%'/>\n</svg>"
-                                )
-                            return svg_path
-                    except Exception:
-                        logging.exception("Failed to export SVG preview")
-                        return None
-
                 def _download_batch(csv_file, *shared_args):
                     """Create a ZIP containing sample QR PNGs for each row in csv_file (or a sample if none) and return path to zip."""
                     try:
@@ -1587,6 +1530,19 @@ class QRGenGUI:
                         zip_path = os.path.join(out_dir, "qr_batch.zip")
                         import zipfile
                         import csv
+                        from .payloads import (
+                            build_url,
+                            build_text,
+                            build_mailto,
+                            build_tel,
+                            build_sms,
+                            build_wifi,
+                            build_geo,
+                            build_event,
+                            build_applink,
+                            build_payment,
+                            build_mecard,
+                        )
 
                         # Create temp files inside out_dir/tmp_batch
                         tmp_dir = os.path.join(out_dir, "tmp_batch")
@@ -1600,19 +1556,101 @@ class QRGenGUI:
                         if csv_file and getattr(csv_file, "name", None):
                             with open(csv_file.name, "r", encoding="utf-8") as fh:
                                 rdr = csv.reader(fh)
+                                header = next(rdr, None)
+                                # Simple check: if first column of first row is 'Format', it's our template
+                                if header:
+                                    if header[0].lower() == "format":
+                                        pass  # skip header
+                                    else:
+                                        rows.append(header)
                                 for r in rdr:
                                     if r:
-                                        rows.append(r[0])
+                                        rows.append(r)
                         if not rows:
-                            rows = ["example.com/1", "example.com/2", "example.com/3"]
+                            rows = [["text", "Sample QR 1"], ["text", "Sample QR 2"]]
 
-                        for i, val in enumerate(rows, start=1):
+                        for i, r in enumerate(rows, start=1):
+                            if len(r) >= 2:
+                                fmt, data = r[0], r[1]
+                                parts = [p.strip() for p in data.split("|")]
+                                fmt = fmt.strip().lower()
+
+                                try:
+                                    if fmt == "url":
+                                        payload = build_url(parts[0])
+                                    elif fmt == "text":
+                                        payload = build_text(parts[0])
+                                    elif fmt == "wifi":
+                                        payload = build_wifi(
+                                            parts[0],
+                                            parts[1] if len(parts) > 1 else "WPA",
+                                            parts[2] if len(parts) > 2 else None,
+                                            (parts[3].lower() == "true")
+                                            if len(parts) > 3
+                                            else False,
+                                        )
+                                    elif fmt == "sms":
+                                        payload = build_sms(
+                                            parts[0], parts[1] if len(parts) > 1 else None
+                                        )
+                                    elif fmt == "tel":
+                                        payload = build_tel(parts[0])
+                                    elif fmt == "mailto":
+                                        payload = build_mailto(
+                                            parts[0],
+                                            parts[1] if len(parts) > 1 else None,
+                                            parts[2] if len(parts) > 2 else None,
+                                        )
+                                    elif fmt == "geo":
+                                        payload = build_geo(
+                                            parts[0],
+                                            parts[1],
+                                            parts[2] if len(parts) > 2 else None,
+                                        )
+                                    elif fmt == "event":
+                                        payload = build_event(
+                                            parts[0],
+                                            parts[1],
+                                            parts[2] if len(parts) > 2 else None,
+                                            parts[3] if len(parts) > 3 else None,
+                                            parts[4] if len(parts) > 4 else None,
+                                        )
+                                    elif fmt == "payment":
+                                        payload = build_payment(
+                                            parts[0],
+                                            parts[1] if len(parts) > 1 else None,
+                                            parts[2] if len(parts) > 2 else None,
+                                        )
+                                    elif fmt == "mecard":
+                                        payload = build_mecard(
+                                            parts[0],
+                                            parts[1] if len(parts) > 1 else None,
+                                            parts[2] if len(parts) > 2 else None,
+                                            parts[3] if len(parts) > 3 else None,
+                                            parts[4] if len(parts) > 4 else None,
+                                        )
+                                    elif fmt == "vcard":
+                                        vcard_dict = {}
+                                        for p in parts:
+                                            if ":" in p:
+                                                k, v = p.split(":", 1)
+                                                vcard_dict[k.strip()] = v.strip()
+                                        from .payloads import build_vcard
+
+                                        payload = build_vcard(vcard_dict)
+                                    else:
+                                        payload = data
+                                except Exception:
+                                    payload = data
+                            else:
+                                payload = r[0]
+
                             # Generate a PNG for each
                             fname = os.path.join(tmp_dir, f"qr_{i}.png")
                             # Reuse generate_qr to write file to destination
                             try:
                                 generate_qr(
-                                    val,
+                                    payload,
                                     dest=fname,
                                     size=512,
                                     fill_color="black",
@@ -1646,10 +1684,32 @@ class QRGenGUI:
 
                         with open(template_path, "w", encoding="utf-8", newline="") as fh:
                             writer = csv.writer(fh)
-                            writer.writerow(["Content"])
-                            writer.writerow(["https://google.com"])
-                            writer.writerow(["https://github.com"])
-                            writer.writerow(["Sample Text"])
+                            writer.writerow(["Format", "Data"])
+                            writer.writerow(["url", "https://example.com"])
+                            writer.writerow(["text", "Hello World"])
+                            writer.writerow(["wifi", "HomeNetwork|WPA|SecretPassword|false"])
+                            writer.writerow(["sms", "12345678|Hello from QR"])
+                            writer.writerow(["tel", "12345678"])
+                            writer.writerow(["mailto", "test@example.com|Subject|Body"])
+                            writer.writerow(["geo", "-22.5|17.1|Windhoek"])
+                            writer.writerow(
+                                [
+                                    "event",
+                                    "Meeting|20260101T100000|20260101T110000|Office|Monthly Sync",
+                                ]
+                            )
+                            writer.writerow(
+                                [
+                                    "payment",
+                                    "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa|0.01|Donation",
+                                ]
+                            )
+                            writer.writerow(
+                                ["mecard", "John Doe|12345678|john@example.com|ACME Corp|Friend"]
+                            )
+                            writer.writerow(
+                                ["vcard", "FN:John Doe|ORG:ACME Corp|TEL;TYPE=CELL:12345678"]
+                            )
                         return template_path
                     except Exception:
                         logging.exception("Failed to build CSV template")
@@ -1778,7 +1838,6 @@ class QRGenGUI:
                         pattern_strength,
                         qr_files_md,
                         upload_batch_csv,
-                        download_svg_btn,
                         download_batch_btn,
                         download_template_btn,
                         logo_md,
@@ -1906,11 +1965,6 @@ class QRGenGUI:
                 )
 
                 # Wire downloads
-                download_svg_btn.click(
-                    fn=_export_svg_preview,
-                    inputs=shared_inputs,
-                    outputs=[download_svg_file],
-                )
                 download_batch_btn.click(
                     fn=_download_batch,
                     inputs=[upload_batch_csv] + shared_inputs,
