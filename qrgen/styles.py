@@ -11,16 +11,29 @@ PALETTES: Dict[str, Tuple[str, str]] = {
     "Forest": ("#0B8457", "#E8F6EF"),
     "Violet": ("#6A0DAD", "#F5E9FF"),
     "Slate": ("#0F172A", "#E6EEF6"),
+    "Nord": ("#2E3440", "#D8DEE9"),
+    "Retro": ("#FF1493", "#00BFFF"),
+    "Sunset": ("#FF4E50", "#F9D423"),
+    "Ocean": ("#1CB5E0", "#000046"),
 }
 
 
-def resolve_palette(palette: Optional[str], custom_fg: Optional[str], custom_bg: Optional[str]) -> Tuple[str, str]:
-    """Return (fg, bg) hex colors for a given palette name or custom colors."""
-    if palette and palette in PALETTES:
+def resolve_palette(
+    palette: Optional[str], custom_fg: Optional[str], custom_bg: Optional[str]
+) -> Tuple[str, str]:
+    """Return (fg, bg) hex colors for a given palette name or if 'Custom' is used."""
+    if palette and palette != "Custom" and palette in PALETTES:
         return PALETTES[palette]
     # Fallback to custom or defaults
     fg = custom_fg or "#000000"
     bg = custom_bg or "#FFFFFF"
+    
+    # Ensure they start with #
+    if isinstance(fg, str) and not fg.startswith("#") and len(fg) in (3, 6):
+        fg = f"#{fg}"
+    if isinstance(bg, str) and not bg.startswith("#") and len(bg) in (3, 6):
+        bg = f"#{bg}"
+        
     return fg, bg
 
 
