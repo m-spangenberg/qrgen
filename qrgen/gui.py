@@ -48,6 +48,23 @@ class QRGenGUI:
             "ORG": "Organization or Company name.",
             "NOTE": "A short personal note or comment (max 200 characters).",
         }
+        self.field_labels = {
+            "FN": "vcard_fn",
+            "EMAIL;TYPE=WORK": "vcard_email_work",
+            "EMAIL;TYPE=HOME": "vcard_email_home",
+            "TITLE": "vcard_title",
+            "ROLE": "vcard_role",
+            "BDAY": "vcard_bday",
+            "ADR;TYPE=HOME": "vcard_adr_home",
+            "TEL;TYPE=CELL": "vcard_tel_cell",
+            "TEL;TYPE=WORK": "vcard_tel_work",
+            "TEL;TYPE=HOME": "vcard_tel_home",
+            "TEL;TYPE=FAX": "vcard_tel_fax",
+            "URL": "vcard_url",
+            "TZ": "vcard_tz",
+            "ORG": "vcard_org",
+            "NOTE": "vcard_note",
+        }
 
     def main(self):
         """
@@ -595,7 +612,10 @@ class QRGenGUI:
                                 for field in self.user_fields:
                                     vcard_inputs.append(
                                         gr.Textbox(
-                                            label=field,
+                                            label=t(
+                                                self.field_labels.get(field, field),
+                                                lang,
+                                            ),
                                             placeholder=DEFAULT_VCARD_FIELDS[field],
                                             info=self.field_descriptions.get(field, ""),
                                         )
@@ -1297,6 +1317,10 @@ class QRGenGUI:
                         gr.update(value=t("generate_applink", sel)),
                         gr.update(value=t("generate_payment", sel)),
                         gr.update(value=t("generate_mecard", sel)),
+                        *(
+                            gr.update(label=t(self.field_labels.get(f, f), sel))
+                            for f in self.user_fields
+                        ),
                         gr.update(label=t("label_url", sel)),
                         gr.update(label=t("label_text", sel)),
                         gr.update(label=t("label_to", sel)),
@@ -1782,6 +1806,7 @@ class QRGenGUI:
                         app_generate,
                         pay_generate,
                         me_generate,
+                        *vcard_inputs,
                         url_input,
                         text_input,
                         mail_to,
