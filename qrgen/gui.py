@@ -1120,12 +1120,12 @@ class QRGenGUI:
                                     custom_fg = gr.ColorPicker(
                                         label=t("foreground_color", lang),
                                         value="#000000",
-                                        visible=True,
+                                        visible=False,
                                     )
                                     custom_bg = gr.ColorPicker(
                                         label=t("bg_color", lang),
                                         value="#ffffff",
-                                        visible=True,
+                                        visible=False,
                                     )
 
                                 qr_gradient_md = gr.Markdown(
@@ -1149,10 +1149,14 @@ class QRGenGUI:
                                 )
                                 with gr.Row():
                                     gradient_from = gr.ColorPicker(
-                                        label=t("gradient_from", lang), value="#000000"
+                                        label=t("gradient_from", lang),
+                                        value="#000000",
+                                        visible=False,
                                     )
                                     gradient_to = gr.ColorPicker(
-                                        label=t("gradient_to", lang), value="#ffffff"
+                                        label=t("gradient_to", lang),
+                                        value="#ffffff",
+                                        visible=False,
                                     )
                                 gradient_target = gr.Dropdown(
                                     label=t("gradient_target", lang),
@@ -1678,12 +1682,12 @@ class QRGenGUI:
                             gr.update(value=1000),  # max_payload
                             gr.update(value="Classic"),  # palette_dropdown
                             gr.update(value=False),  # gradient_toggle
-                            gr.update(value="#000000"),  # gradient_from
-                            gr.update(value="#ffffff"),  # gradient_to
+                            gr.update(value="#000000", visible=False),  # gradient_from
+                            gr.update(value="#ffffff", visible=False),  # gradient_to
                             gr.update(value=90),  # gradient_angle
                             gr.update(value="Background"),  # gradient_target
-                            gr.update(value="#000000"),  # custom_fg
-                            gr.update(value="#ffffff"),  # custom_bg
+                            gr.update(value="#000000", visible=False),  # custom_fg
+                            gr.update(value="#ffffff", visible=False),  # custom_bg
                             gr.update(value="square"),  # shape_dropdown
                             gr.update(value="standard"),  # pattern_dropdown
                             gr.update(value=50),  # pattern_strength

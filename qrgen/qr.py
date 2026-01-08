@@ -5,20 +5,42 @@ from PIL import Image, ImageDraw, ImageFont, ImageChops, ImageOps
 import textwrap
 
 def _normalize_color(color):
+    if color is None:
+        return None
+    if not isinstance(color, str):
+        return color
+    color = color.strip()
     if not color:
-        return "black"
-    if isinstance(color, str) and not color.startswith("#") and color not in ("white", "black", "red", "green", "blue", "yellow", "cyan", "magenta"):
-        # Could be a hex without #
-        if all(c in "0123456789abcdefABCDEF" for c in color):
-            return f"#{color}"
+        return None
+    
+    # Check if it's already a hex starting with #
+    if color.startswith("#"):
+        return color
+        
+    # Check if it's a known color name (basic list, PIL handles the rest)
+    if color.lower() in ("white", "black", "red", "green", "blue", "yellow", "cyan", "magenta", "transparent"):
+        return color.lower()
+
+    # Could be a hex without # (3 or 6 chars)
+    if len(color) in (3, 6) and all(c in "0123456789abcdefABCDEF" for c in color):
+        return f"#{color}"
+        
     return color
 
-def _to_rgb_tuple(color):
+def _to_rgb_tuple(color, default=(0, 0, 0)):
+    if isinstance(color, (tuple, list)):
+        return tuple(color)
+    
+    normalized = _normalize_color(color)
+    if normalized is None:
+        return default
+        
     from PIL import ImageColor
     try:
-        return ImageColor.getrgb(_normalize_color(color))
-    except Exception:
-        return (0, 0, 0)
+        return ImageColor.getrgb(normalized)
+    except Exception as e:
+        logging.log(logging.DEBUG, f"Failed to resolve color '{color}': {e}")
+        return default
 
 def generate_qr(
     data,
@@ -117,14 +139,15 @@ def generate_qr(
     resample = Image.LANCZOS
 
     # Background / Foreground
-    bg_rgba = _to_rgb_tuple(back_color)
+    bg_rgba = _to_rgb_tuple(back_color, default=(255, 255, 255))[:3]
     bg_img = Image.new("RGBA", (pixel_size, pixel_size), bg_rgba + (255,))
-    fg_rgba = _to_rgb_tuple(fill_color)
+    fg_rgba = _to_rgb_tuple(fill_color, default=(0, 0, 0))[:3]
     fg_img = Image.new("RGBA", (pixel_size, pixel_size), fg_rgba + (255,))
 
     if color_mask == "gradient":
         grad_base = Image.new("RGBA", (pixel_size, pixel_size))
-        c1, c2 = _to_rgb_tuple(gradient_start), _to_rgb_tuple(gradient_end)
+        c1 = _to_rgb_tuple(gradient_start, default=(0, 0, 0))[:3]
+        c2 = _to_rgb_tuple(gradient_end, default=(255, 255, 255))[:3]
         for y in range(pixel_size):
             t = y / max(1, pixel_size - 1)
             r = int(c1[0] + (c2[0] - c1[0]) * t)
@@ -133,7 +156,8 @@ def generate_qr(
             for x in range(pixel_size): grad_base.putpixel((x, y), (r, g, b_, 255))
         
         angle = float(gradient_angle or 0)
-        rotated_grad = grad_base.rotate(90 - angle, resample=resample, expand=False)
+        # Use BICUBIC for rotation as LANCZOS is not supported by Pillow's rotate()
+        rotated_grad = grad_base.rotate(90 - angle, resample=Image.BICUBIC, expand=False)
         if gradient_target == "background":
             bg_img = rotated_grad
         else:
@@ -194,7 +218,14 @@ def generate_qr(
         fh = _est_h(footer_text, ff, nw)
         nh = img.height + b * 2 + hh + fh
         
-        canvas = Image.new("RGBA", (nw, nh), _to_rgb_tuple(b_color) + (255,))
+        # Use appropriate fallbacks for border color (bg if not specified)
+        actual_back_color = back_color if back_color else "white"
+        if color_mask == "gradient" and gradient_target == "background":
+            actual_back_color = gradient_start if gradient_start else "white"
+            
+        b_color = border_color if border_color else actual_back_color
+        
+        canvas = Image.new("RGBA", (nw, nh), _to_rgb_tuple(b_color, default=(255, 255, 255))[:3] + (255,))
         px, py = b, b + hh
         
         # QR Corner Rounding
@@ -206,7 +237,7 @@ def generate_qr(
             canvas.paste(img, (px, py))
 
         dc = ImageDraw.Draw(canvas)
-        tc = _to_rgb_tuple(fill_color)
+        tc = _to_rgb_tuple(fill_color, default=(0, 0, 0))
         if header_text: _draw_txt(dc, header_text, hf, header_align.lower(), 4, nw, tc)
         if footer_text: _draw_txt(dc, footer_text, ff, footer_align.lower(), py + img.height + b + 4, nw, tc)
 
