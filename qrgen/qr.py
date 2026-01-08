@@ -137,9 +137,13 @@ def generate_qr(
     qr.make(fit=True)
 
     # High-res intermediate
-    img = qr.make_image(image_factory=StyledPilImage, module_drawer=drawer, eye_drawer=drawer).convert("RGBA")
-    mask = ImageOps.invert(img.convert("L"))
-    pixel_size = img.width
+    raw_img = qr.make_image(
+        image_factory=StyledPilImage, module_drawer=drawer, eye_drawer=drawer
+    ).convert("RGBA")
+    # For mask, we want modules=255, background=0.
+    # StyledPilImage by default is black modules on white background.
+    mask = ImageOps.invert(raw_img.convert("L"))
+    pixel_size = raw_img.width
     resample = Image.LANCZOS
 
     # Background / Foreground
@@ -149,11 +153,11 @@ def generate_qr(
     else:
         bg_rgba = _to_rgb_tuple(back_color, default=(255, 255, 255))[:3]
         bg_img = Image.new("RGBA", (pixel_size, pixel_size), bg_rgba + (255,))
-    
+
     fg_rgba = _to_rgb_tuple(fill_color, default=(0, 0, 0))[:3]
     fg_img = Image.new("RGBA", (pixel_size, pixel_size), fg_rgba + (255,))
 
-    if color_mask == "gradient" and not transparent_bg:
+    if color_mask == "gradient":
         grad_base = Image.new("RGBA", (pixel_size, pixel_size))
         c1 = _to_rgb_tuple(gradient_start, default=(0, 0, 0))[:3]
         c2 = _to_rgb_tuple(gradient_end, default=(255, 255, 255))[:3]
@@ -162,14 +166,15 @@ def generate_qr(
             r = int(c1[0] + (c2[0] - c1[0]) * t)
             g = int(c1[1] + (c2[1] - c1[1]) * t)
             b_ = int(c1[2] + (c2[2] - c1[2]) * t)
-            for x in range(pixel_size): grad_base.putpixel((x, y), (r, g, b_, 255))
-        
+            for x in range(pixel_size):
+                grad_base.putpixel((x, y), (r, g, b_, 255))
+
         angle = float(gradient_angle or 0)
         # Use BICUBIC for rotation as LANCZOS is not supported by Pillow's rotate()
         rotated_grad = grad_base.rotate(90 - angle, resample=Image.BICUBIC, expand=False)
-        if gradient_target == "background":
+        if gradient_target == "background" and not transparent_bg:
             bg_img = rotated_grad
-        else:
+        elif gradient_target == "foreground":
             fg_img = rotated_grad
 
     # Compose QR
@@ -180,71 +185,95 @@ def generate_qr(
     # Post-processing
     try:
         b = max(0, int(border or 0))
-        qr_cr = max(0, int(qr_corner_radius if qr_corner_radius is not None else corner_radius))
-        outer_cr = max(0, int(border_corner_radius if border_corner_radius is not None else corner_radius))
-        
-        # Determine background color for border fallback
-        actual_back_color = back_color
-        if color_mask == "gradient" and gradient_target == "background":
-            # If background is a gradient, we can't easily pick one color for the border.
-            # Using gradient_start as a reasonable fallback for the border if not specified.
-            actual_back_color = gradient_start
-            
-        b_color = _normalize_color(border_color) if border_color else actual_back_color
-        
+        qr_cr = max(
+            0, int(qr_corner_radius if qr_corner_radius is not None else corner_radius)
+        )
+        outer_cr = max(
+            0,
+            int(border_corner_radius if border_corner_radius is not None else corner_radius),
+        )
+
+        # Fallback background color for canvas/border if not specified
+        final_bg_color = back_color if back_color else "white"
+        if (
+            color_mask == "gradient"
+            and gradient_target == "background"
+            and not transparent_bg
+        ):
+            final_bg_color = gradient_start if gradient_start else "white"
+
+        b_color = border_color if border_color else final_bg_color
+
         from PIL import ImageFont
+
         def _get_fnt(p, s, bold):
             if p:
-                try: return ImageFont.truetype(p, s)
-                except: pass
-            try: return ImageFont.truetype("DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf", s)
-            except: return ImageFont.load_default()
+                try:
+                    return ImageFont.truetype(p, s)
+                except:
+                    pass
+            try:
+                return ImageFont.truetype(
+                    "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf", s
+                )
+            except:
+                return ImageFont.load_default()
 
         hf = _get_fnt(header_font_path, header_font_size, header_bold)
         ff = _get_fnt(footer_font_path, footer_font_size, footer_bold)
 
         def _draw_txt(dr, txt, fnt, al, y, cw, clr):
-            if not txt or not fnt: return 0
+            if not txt or not fnt:
+                return 0
             pw = cw - (b * 2) - 16
-            ls = textwrap.wrap(txt, width=max(1, int(pw / (header_font_size * 0.5))))
+            fsize = getattr(fnt, "size", 16)
+            ls = textwrap.wrap(txt, width=max(1, int(pw / (fsize * 0.5))))
             cy = y
             for l in ls:
-                try: bb = dr.textbbox((0, 0), l, font=fnt); lw, lh = bb[2]-bb[0], bb[3]-bb[1]
-                except: lw, lh = 0, header_font_size
-                tx = b+8 if al=="left" else (cw-b-8-lw if al=="right" else (cw-lw)//2)
+                try:
+                    bb = dr.textbbox((0, 0), l, font=fnt)
+                    lw, lh = bb[2] - bb[0], bb[3] - bb[1]
+                except:
+                    lw, lh = 0, fsize
+                tx = (
+                    b + 8
+                    if al == "left"
+                    else (cw - b - 8 - lw if al == "right" else (cw - lw) // 2)
+                )
                 dr.text((tx, cy), l, fill=clr, font=fnt)
                 cy += lh + 2
             return cy - y
 
         def _est_h(txt, fnt, cw):
-            if not txt or not fnt: return 0
+            if not txt or not fnt:
+                return 0
             pw = cw - (b * 2) - 16
-            ls = textwrap.wrap(txt, width=max(1, int(pw / (header_font_size * 0.5))))
-            return len(ls) * (header_font_size + 4) + 8
+            fsize = getattr(fnt, "size", 16)
+            ls = textwrap.wrap(txt, width=max(1, int(pw / (fsize * 0.5))))
+            return len(ls) * (fsize + 4) + 8
 
         nw = img.width + b * 2
         hh = _est_h(header_text, hf, nw)
         fh = _est_h(footer_text, ff, nw)
         nh = img.height + b * 2 + hh + fh
-        
-        # Use appropriate fallbacks for border color (bg if not specified)
-        actual_back_color = back_color if back_color else "white"
-        if color_mask == "gradient" and gradient_target == "background" and not transparent_bg:
-            actual_back_color = gradient_start if gradient_start else "white"
-            
-        b_color = border_color if border_color else actual_back_color
-        
+
         if transparent_bg:
             canvas = Image.new("RGBA", (nw, nh), (0, 0, 0, 0))
         else:
-            canvas = Image.new("RGBA", (nw, nh), _to_rgb_tuple(b_color, default=(255, 255, 255))[:3] + (255,))
-        
+            canvas = Image.new(
+                "RGBA",
+                (nw, nh),
+                _to_rgb_tuple(b_color, default=(255, 255, 255))[:3] + (255,),
+            )
+
         px, py = b, b + hh
-        
+
         # QR Corner Rounding
         if qr_cr > 0:
             qm = Image.new("L", (img.width, img.height), 0)
-            ImageDraw.Draw(qm).rounded_rectangle([0, 0, img.width, img.height], radius=qr_cr, fill=255)
+            ImageDraw.Draw(qm).rounded_rectangle(
+                [0, 0, img.width, img.height], radius=qr_cr, fill=255
+            )
             canvas.paste(img, (px, py), mask=qm)
         else:
             canvas.paste(img, (px, py))
