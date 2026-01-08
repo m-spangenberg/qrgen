@@ -101,9 +101,12 @@ def generate_qr(
     ec_level = ec_map.get(str(error_correction).upper(), qrcode.constants.ERROR_CORRECT_H)
 
     # Resolve palette if provided
-    if "palette" in kwargs and kwargs["palette"] != "Custom":
+    if "palette" in kwargs:
         from .styles import resolve_palette
-        fill_color, back_color = resolve_palette(kwargs["palette"], fill_color, back_color)
+
+        fill_color, back_color = resolve_palette(
+            kwargs["palette"], fill_color, back_color
+        )
 
     # If GUI sends 'shape', use it for module_drawer
     if "shape" in kwargs:
