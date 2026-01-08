@@ -1,12 +1,12 @@
 """
-main.py: Entry point for QR vCard Generator
+main.py: Entry point for QRGen
 """
 
-from qr_vcard.gui import QRVCardGUI
+from qrgen.gui import QRGenGUI
 
 
 def main():
-    app = QRVCardGUI()
+    app = QRGenGUI()
     app.main()
 
 

@@ -1,42 +1,54 @@
-# QR-vCard
+# QRGen
 
 <div align="center">
 <img src="readme/readme_header_qrvcard.png" alt="example qr code" width="720"/>
 </div>
 
-## __Summary__
+## Summary
 
-For my **CS50P** [Final Project](https://cs50.harvard.edu/python/2022/project/), I created a single-purpose application that generates vCards in QR code format. Originally built as a desktop app, it has since been migrated to a browser-based interface powered by **Gradio**.
+For my **CS50P** [Final Project](https://cs50.harvard.edu/python/2022/project/), I created a single-purpose application that generates vCards in QR code format. Originally built as a desktop app specifically for vCards, it has since been migrated to a browser-based interface powered by **Gradio** and has been expanded to support multiple QR code formats and customization options.
 
-## __Todo__
+## Todo
 
-- [x] Migrate from Tkinter to Gradio
-- [x] Add color customization for QR codes
-- [x] Add logo/image overlay support
-- [x] Improve field validation and error handling
-- [x] Implement live preview of vCard and QR code
-- [x] Update README with new setup instructions
-- [x] Switch to `uv` for dependency management
-- [x] Add tests for new features
-- [] Expand to support additional QR formats (e.g., WiFi, URLs)
-- [] Add configuration saving/loading for user preferences
-- [] Add additional styling options for QR codes (shapes, patterns)
-- [] Add colour palletes and gradients for QR codes
-- [] Add multi-language support for the interface
-- [] Deploy to a public web server for easy access
+- [ ] Debig customization options so FG and BG colors are applied correctly
+- [ ] Add configuration saving/loading/resetting for user preferences and session persistence
+- [ ] Deploy to a public web server for easy access
 
-## __Description__
+## Features
 
-This application allows users to enter contact details into a responsive web interface to generate a high-quality Quick Response (QR) code. These codes can be scanned by most modern mobile devices, making them ideal for embedding contact details on business cards, resumes, or marketing materials.
+This application allows users to generate a high-quality Quick Response (QR) codes for various data types. These codes can be scanned by most modern mobile devices, making them ideal for embedding contact details on business cards, resumes, or marketing materials.
 
-The migration to Gradio brings several key improvements:
 - **Responsive Web UI**: Access the tool via your browser with a modern look and feel.
-- **Customization**: Change QR foreground and background colors to match your branding.
+- **Customization**: Change QR colors, sizes, shapes, gradients, borders, headers and footers, error correction levels and more.
 - **Branding**: Upload a logo or image to overlay in the center of the QR code.
-- **Robust Validation**: Real-time feedback on field formats (Email, Phone, Birthday, etc.).
-- **Live Preview**: See your vCard string and QR code update as you generate.
+- **Multiple QR Formats**: Support for various QR code data types beyond vCards.
+- **Language Support**: Interface available in multiple languages for broader accessibility.
 
-### __Setup__
+## Supported QR Formats
+
+1. **vCard** – Electronic business card format for sharing contact information.
+2. **URL** – Links to web resources.
+3. **Plain Text** – Simple text data.
+4. **Image** – Links to image resources.
+5. **Email** – Pre-filled email addresses or templates (e.g., `mailto:` links).
+6. **Phone Number** – Click-to-call phone numbers (e.g., `tel:` links).
+7. **SMS** – Pre-filled SMS messages (e.g., `sms:` links).
+8. **Wi-Fi Credentials** – Network SSID and password for quick Wi-Fi access.
+9. **Calendar Event** – Event details that can be added to a user's calendar.
+10. **Geolocation** – GPS coordinates for maps and navigation.
+11. **App Links** – Deep links to open or install mobile applications.
+12. **Payment Information** – Payment requests or cryptocurrency addresses.
+13. **meCard** – A simplified version of vCard for mobile devices.
+
+## Supported Languages
+
+- Afrikaans
+- English
+- Spanish
+
+Please refer to the `qrgen/i18n.py` for available language files. Contributions for additional translations are welcome!
+
+## Setup
 
 The project now uses **uv** for extremely fast and reliable dependency management. Make use of this one-liner for a quick setup.
 
@@ -58,7 +70,7 @@ uv sync
 uv run python main.py
 ```
 
-### __vCard Format__
+### vCard Format
 
 The vCard, or otherwise known as the VCF (Virtual Contact File) format is essentially a container format for contact information that can be shared between electronic devices, notably mobile phones.
 
@@ -94,7 +106,7 @@ END:VCARD
 <img src="readme/example.png" alt="example qr code" width="240"/>
 </div>  
 
-### __Testing and Development__
+### Testing and Development
 
 To set up the environment and install all dependencies:
 
@@ -115,11 +127,11 @@ Or manually using `uv`:
 uv run pytest
 ```
 
-### __Acknowledgements__
+### Acknowledgements
 
 Thank you to David Malan and his entire team for helping to make Harvard's CS50 accessible to anyone who wants to learn.
 
-#### __Further Reading__
+#### Further Reading
 
 If you intend to fork this project, see the following links for helpful information on vCards.
 
@@ -127,7 +139,7 @@ If you intend to fork this project, see the following links for helpful informat
 * [World Wide Web Consortium](https://www.w3.org/2002/12/cal/vcard-notes.html) - Format Notes
 * [Wikipedia](https://en.wikipedia.org/wiki/VCard) - vCards
 
-#### __Libraries Used__
+#### Libraries Used
 
 The following libraries and tools are used to make this project possible:
 
@@ -135,3 +147,5 @@ The following libraries and tools are used to make this project possible:
 * [qrcode](https://pypi.org/project/qrcode/) - Generating high-quality QR codes
 * [Pillow](https://pypi.org/project/Pillow/) - Image processing and branding support
 * [uv](https://github.com/astral-sh/uv) - Fast Python package management
+* [pytest](https://pypi.org/project/pytest/) - Testing framework
+* [ruff](https://pypi.org/project/ruff/) - Linting and code formatting
