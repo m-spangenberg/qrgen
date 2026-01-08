@@ -189,11 +189,11 @@ class QRGenGUI:
                 # build gradient spec
                 gradient = None
                 if use_gradient:
-                    if shared.get("gradient_palette") != "Custom":
-                        from .styles import resolve_palette
-                        pg_from, pg_to = resolve_palette(shared.get("gradient_palette"), None, None)
-                    else:
-                        pg_from, pg_to = g_from, g_to
+                    from .styles import resolve_palette
+
+                    pg_from, pg_to = resolve_palette(
+                        shared.get("gradient_palette"), g_from, g_to
+                    )
                     gradient = {
                         "type": "linear",
                         "colors": [pg_from, pg_to],
@@ -219,12 +219,9 @@ class QRGenGUI:
                 header_txt = _wrap_text(header_txt, header_font_size, size)
                 footer_txt = _wrap_text(footer_txt, footer_font_size, size)
 
-                if palette == "Custom":
-                    fg = custom_fg
-                    bg = custom_bg
-                else:
-                    fg = None
-                    bg = None
+                from .styles import resolve_palette
+
+                fg, bg = resolve_palette(palette, custom_fg, custom_bg)
 
                 generate_qr(
                     qr_content,
@@ -381,11 +378,11 @@ class QRGenGUI:
                 )
                 gradient = None
                 if use_gradient:
-                    if shared.get("gradient_palette") != "Custom":
-                        from .styles import resolve_palette
-                        pg_from, pg_to = resolve_palette(shared.get("gradient_palette"), None, None)
-                    else:
-                        pg_from, pg_to = g_from, g_to
+                    from .styles import resolve_palette
+
+                    pg_from, pg_to = resolve_palette(
+                        shared.get("gradient_palette"), g_from, g_to
+                    )
                     gradient = {
                         "type": "linear",
                         "colors": [pg_from, pg_to],
@@ -410,12 +407,9 @@ class QRGenGUI:
                 header_txt = _wrap_text(header_txt, header_font_size, size)
                 footer_txt = _wrap_text(footer_txt, footer_font_size, size)
 
-                if palette == "Custom":
-                    fg = custom_fg
-                    bg = custom_bg
-                else:
-                    from .styles import resolve_palette
-                    fg, bg = resolve_palette(palette, None, None)
+                from .styles import resolve_palette
+
+                fg, bg = resolve_palette(palette, custom_fg, custom_bg)
 
                 generate_qr(
                     payload,
@@ -424,6 +418,7 @@ class QRGenGUI:
                     error_correction=ec,
                     shape=shape,
                     pattern=pattern,
+                    palette=palette,
                     fill_color=fg,
                     back_color=bg,
                     transparent_bg=trans_bg,
@@ -616,8 +611,6 @@ class QRGenGUI:
                                                 self.field_labels.get(field, field),
                                                 lang,
                                             ),
-                                            placeholder=DEFAULT_VCARD_FIELDS[field],
-                                            info=self.field_descriptions.get(field, ""),
                                         )
                                     )
                                 vcard_logo = gr.File(
@@ -667,7 +660,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                url_generate = gr.Button(t("generate_url", lang), variant="primary")
+                                url_generate = gr.Button(
+                                    t("generate_url", lang), variant="primary"
+                                )
                                 url_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -696,7 +691,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                text_generate = gr.Button(t("generate_text", lang), variant="primary")
+                                text_generate = gr.Button(
+                                    t("generate_text", lang), variant="primary"
+                                )
                                 text_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -729,7 +726,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                mail_generate = gr.Button(t("generate_mailto", lang), variant="primary")
+                                mail_generate = gr.Button(
+                                    t("generate_mailto", lang), variant="primary"
+                                )
                                 mail_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -758,7 +757,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                phone_generate = gr.Button(t("generate_phone", lang), variant="primary")
+                                phone_generate = gr.Button(
+                                    t("generate_phone", lang), variant="primary"
+                                )
                                 phone_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -790,7 +791,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                sms_generate = gr.Button(t("generate_sms", lang), variant="primary")
+                                sms_generate = gr.Button(
+                                    t("generate_sms", lang), variant="primary"
+                                )
                                 sms_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -828,7 +831,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                wifi_generate = gr.Button(t("generate_wifi", lang), variant="primary")
+                                wifi_generate = gr.Button(
+                                    t("generate_wifi", lang), variant="primary"
+                                )
                                 wifi_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -865,7 +870,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                evt_generate = gr.Button(t("generate_event", lang), variant="primary")
+                                evt_generate = gr.Button(
+                                    t("generate_event", lang), variant="primary"
+                                )
                                 evt_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -896,7 +903,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                geo_generate = gr.Button(t("generate_geo", lang), variant="primary")
+                                geo_generate = gr.Button(
+                                    t("generate_geo", lang), variant="primary"
+                                )
                                 geo_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -925,7 +934,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                app_generate = gr.Button(t("generate_applink", lang), variant="primary")
+                                app_generate = gr.Button(
+                                    t("generate_applink", lang), variant="primary"
+                                )
                                 app_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -958,7 +969,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                pay_generate = gr.Button(t("generate_payment", lang), variant="primary")
+                                pay_generate = gr.Button(
+                                    t("generate_payment", lang), variant="primary"
+                                )
                                 pay_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -989,7 +1002,9 @@ class QRGenGUI:
                                     visible=False,
                                 )
                             with gr.Column(scale=1):
-                                me_generate = gr.Button(t("generate_mecard", lang), variant="primary")
+                                me_generate = gr.Button(
+                                    t("generate_mecard", lang), variant="primary"
+                                )
                                 me_preview_img = gr.Image(
                                     label=t("qr_preview", lang),
                                     value="images/placeholder.png",
@@ -1198,7 +1213,9 @@ class QRGenGUI:
                             with gr.Column(scale=1):
                                 logo_md = gr.Markdown("### " + t("logo_section", lang))
                                 shared_logo = gr.File(label=t("logo_optional", lang))
-                                shared_logo_enable = gr.Checkbox(label=t('enable_logo', lang), value=False)
+                                shared_logo_enable = gr.Checkbox(
+                                    label=t("enable_logo", lang), value=False
+                                )
                                 logo_preview = gr.Image(
                                     label=t("logo_preview", lang),
                                     value="images/placeholder.png",
@@ -1350,7 +1367,9 @@ class QRGenGUI:
                         gr.update(label=t("label_email", sel)),
                         gr.update(label=t("label_organization", sel)),
                         gr.update(label=t("label_note", sel)),
-                        gr.update(value="## " + t("Customization", sel)),  # customization header
+                        gr.update(
+                            value="## " + t("Customization", sel)
+                        ),  # customization header
                         gr.update(label=t("qr_size", sel)),
                         gr.update(label=t("error_correction", sel)),
                         gr.update(label=t("max_payload", sel)),
@@ -1371,7 +1390,9 @@ class QRGenGUI:
                         gr.update(label=t("gradient_to", sel)),
                         gr.update(label=t("gradient_target", sel)),
                         gr.update(label=t("gradient_angle", sel)),
-                        gr.update(value="### " + t("Appearance", sel)),  # appearance header
+                        gr.update(
+                            value="### " + t("Appearance", sel)
+                        ),  # appearance header
                         gr.update(label=t("module_shape", sel)),
                         gr.update(label=t("pattern", sel)),
                         gr.update(label=t("pattern_strength", sel)),
@@ -1413,8 +1434,6 @@ class QRGenGUI:
                         gr.update(value=""),  # settings_status
                         gr.update(value=t("save_settings", sel)),
                         gr.update(value=t("reset_settings", sel)),
-                        gr.update(choices=["square", "rounded", "dot", "circle"]),  # 98: shape_dropdown
-                        gr.update(choices=["Custom", "Nord", "Retro", "Sunset", "Ocean"]), # 99: gradient_palette
                     )
 
                 # Save settings test: generate a small test QR to preview current settings
@@ -1615,7 +1634,8 @@ class QRGenGUI:
                                         )
                                     elif fmt == "sms":
                                         payload = build_sms(
-                                            parts[0], parts[1] if len(parts) > 1 else None
+                                            parts[0],
+                                            parts[1] if len(parts) > 1 else None,
                                         )
                                     elif fmt == "tel":
                                         payload = build_tel(parts[0])
@@ -1706,12 +1726,16 @@ class QRGenGUI:
                         template_path = os.path.join(out_dir, "batch_template.csv")
                         import csv
 
-                        with open(template_path, "w", encoding="utf-8", newline="") as fh:
+                        with open(
+                            template_path, "w", encoding="utf-8", newline=""
+                        ) as fh:
                             writer = csv.writer(fh)
                             writer.writerow(["Format", "Data"])
                             writer.writerow(["url", "https://example.com"])
                             writer.writerow(["text", "Hello World"])
-                            writer.writerow(["wifi", "HomeNetwork|WPA|SecretPassword|false"])
+                            writer.writerow(
+                                ["wifi", "HomeNetwork|WPA|SecretPassword|false"]
+                            )
                             writer.writerow(["sms", "12345678|Hello from QR"])
                             writer.writerow(["tel", "12345678"])
                             writer.writerow(["mailto", "test@example.com|Subject|Body"])
@@ -1729,10 +1753,16 @@ class QRGenGUI:
                                 ]
                             )
                             writer.writerow(
-                                ["mecard", "John Doe|12345678|john@example.com|ACME Corp|Friend"]
+                                [
+                                    "mecard",
+                                    "John Doe|12345678|john@example.com|ACME Corp|Friend",
+                                ]
                             )
                             writer.writerow(
-                                ["vcard", "FN:John Doe|ORG:ACME Corp|TEL;TYPE=CELL:12345678"]
+                                [
+                                    "vcard",
+                                    "FN:John Doe|ORG:ACME Corp|TEL;TYPE=CELL:12345678",
+                                ]
                             )
                         return template_path
                     except Exception:
@@ -1891,8 +1921,6 @@ class QRGenGUI:
                         settings_status,
                         save_settings_btn,
                         reset_settings_btn,
-                        shape_dropdown,
-                        gradient_palette,
                     ],
                 )
 
