@@ -10,9 +10,7 @@ For my **CS50P** [Final Project](https://cs50.harvard.edu/python/2022/project/),
 
 ## Todo
 
-- [ ] Add UI/UX polish to improve user experience (Group settings into blocks, add tooltips, etc.)
-- [ ] Implement batch QR code generation from CSV input (batch file upload under settings tab)
-- [ ] Add option to download QR codes in different formats (Download As section under settings: SVG, PNG, JPEG, etc.)
+- [ ] Debig customization options so FG and BG colors are applied correctly
 - [ ] Add configuration saving/loading/resetting for user preferences and session persistence
 - [ ] Deploy to a public web server for easy access
 
