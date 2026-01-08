@@ -1,7 +1,7 @@
 [project]
-name = "qr-vcard-generator"
-version = "0.2.0"
-description = "A single purpose desktop application that allows a user to enter contact details into a GUI that then generates a QR code image."
+name = "qrgen"
+version = "0.3.0"
+description = "A simple application that allows a user to generate QR code images."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

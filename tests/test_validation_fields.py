@@ -1,4 +1,4 @@
-from qr_vcard.validation import validate_birthday, validate_address, validate_note
+from qrgen.validation import validate_birthday, validate_address, validate_note
 
 def test_validate_birthday():
     assert validate_birthday("")  # empty allowed

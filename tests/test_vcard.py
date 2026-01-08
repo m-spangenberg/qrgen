@@ -1,5 +1,5 @@
 import pytest
-from qr_vcard.vcard import DEFAULT_VCARD_FIELDS, build_vcard
+from qrgen.payloads import DEFAULT_VCARD_FIELDS, build_vcard
 
 def test_vcard_exists():
     assert DEFAULT_VCARD_FIELDS is not None

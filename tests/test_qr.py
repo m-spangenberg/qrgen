@@ -1,5 +1,5 @@
 import os
-from qr_vcard.qr import generate_qr
+from qrgen.qr import generate_qr
 
 def test_generate_qr_creates_file():
     test_path = "output/test_qr.png"

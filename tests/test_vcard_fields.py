@@ -1,4 +1,4 @@
-from qr_vcard.vcard import DEFAULT_VCARD_FIELDS
+from qrgen.payloads import DEFAULT_VCARD_FIELDS
 
 def test_all_fields_present():
     expected_fields = [

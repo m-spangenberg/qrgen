@@ -1,4 +1,4 @@
-from qr_vcard.validation import validate_email, validate_phone, validate_url, validate_required
+from qrgen.validation import validate_email, validate_phone, validate_url, validate_required
 
 # Email validation
 def test_validate_email():
